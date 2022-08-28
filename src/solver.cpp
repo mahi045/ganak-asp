@@ -325,10 +325,11 @@ void Solver::decideLiteral(smStateT &sm_state) {
   unsigned max_score_var = *it;
   float max_score = scoreOf(*(it));
   float score;
+  bool isindependent_support_present = false;
   if (config_.perform_projectedmodelcounting)
   {
     isindependent = true;
-    bool isindependent_support_present = false;
+    
     while (*it != varsSENTINEL &&
              independent_support_.find(*it) == independent_support_.end()) {
       it++;
