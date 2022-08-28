@@ -24,6 +24,10 @@ enum retStateT
   BACKTRACK,
   RESTART
 };
+enum smStateT {
+	CONFLICT, NIL
+};
+
 
 class StopWatch
 {
@@ -141,7 +145,7 @@ private:
 
   SOLVER_StateT countSAT();
 
-  void decideLiteral();
+  void decideLiteral(smStateT &sm_state);
   bool bcp();
 
   void decayActivitiesOf(Component &comp)
@@ -160,12 +164,12 @@ private:
   // beginingg at offset start_at_stack_ofs
   bool BCP(unsigned start_at_stack_ofs);
 
-  retStateT backtrack();
+  retStateT backtrack(smStateT &sm_state);
 
   // if on the current decision level
   // a second branch can be visited, RESOLVED is returned
   // otherwise returns BACKTRACK
-  retStateT resolveConflict();
+  retStateT resolveConflict(smStateT &sm_state);
 
   /////////////////////////////////////////////
   //  BEGIN small helper functions

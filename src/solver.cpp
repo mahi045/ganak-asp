@@ -270,18 +270,19 @@ void Solver::solve(const string &file_name)
 SOLVER_StateT Solver::countSAT() {
   retStateT state = RESOLVED;
 
+  smStateT sm_state = NIL;
   while (true) {
     while (comp_manager_.findNextRemainingComponentOf(stack_.top())) {
       unsigned t = statistics_.num_cache_look_ups_ + 1;
       if (2 * log2(t) > log2(config_.delta) + 64 * config_.hashrange * 0.9843) { // 1 - log_2(2.004)/64 = 0.9843
         return CHANGEHASH;
       }
-      decideLiteral();
+      decideLiteral(sm_state);
       if (stopwatch_.timeBoundBroken()) {
         return TIMEOUT;
       }
-      while (!bcp()) {
-        state = resolveConflict();
+      while (sm_state == CONFLICT || !bcp()) {
+        state = resolveConflict(sm_state);
         if (state == BACKTRACK) {
           break;
         }
@@ -291,7 +292,9 @@ SOLVER_StateT Solver::countSAT() {
       }
     }
 
-    state = backtrack();
+    state = backtrack(sm_state);
+    if (sm_state == CONFLICT) 
+			sm_state = NIL;
     if (state == RESTART) {
       continue;
     }
@@ -299,9 +302,9 @@ SOLVER_StateT Solver::countSAT() {
       return SUCCESS;
     }
     while (state != PROCESS_COMPONENT && !bcp()) {
-      state = resolveConflict();
+      state = resolveConflict(sm_state);
       if (state == BACKTRACK) {
-        state = backtrack();
+        state = backtrack(sm_state);
         if (state == EXIT) {
           return SUCCESS;
         }
@@ -311,7 +314,7 @@ SOLVER_StateT Solver::countSAT() {
   return SUCCESS;
 }
 
-void Solver::decideLiteral() {
+void Solver::decideLiteral(smStateT &sm_state) {
   // establish another decision stack level
   stack_.push_back(
     StackLevel(stack_.top().currentRemainingComponent(),
@@ -441,6 +444,9 @@ void Solver::decideLiteral() {
   }
   // this assert should always hold,
   // if not then there is a bug in the logic of countSAT();
+  if (!isindependent_support_present) {
+    sm_state = CONFLICT;
+  }
   assert(max_score_var != 0);
   bool polarity = true;
   switch (config_.polarity_config) {
@@ -508,7 +514,7 @@ void Solver::decideLiteral() {
   }
 }
 
-retStateT Solver::backtrack() {
+retStateT Solver::backtrack(smStateT &sm_state) {
   assert(
       stack_.top().remaining_components_ofs() <= comp_manager_.component_stack_size());
 
@@ -640,18 +646,20 @@ retStateT Solver::backtrack() {
   return EXIT;
 }
 
-retStateT Solver::resolveConflict() {
-  recordLastUIPCauses();
+retStateT Solver::resolveConflict(smStateT &sm_state) {
+  if (sm_state == NIL) {
+    recordLastUIPCauses();
 
-  if (statistics_.num_clauses_learned_ - last_ccl_deletion_time_ >
-        statistics_.clause_deletion_interval()) {
-    deleteConflictClauses();
-    last_ccl_deletion_time_ = statistics_.num_clauses_learned_;
-  }
+    if (statistics_.num_clauses_learned_ - last_ccl_deletion_time_ >
+          statistics_.clause_deletion_interval()) {
+      deleteConflictClauses();
+      last_ccl_deletion_time_ = statistics_.num_clauses_learned_;
+    }
 
-  if (statistics_.num_clauses_learned_ - last_ccl_cleanup_time_ > 100000) {
-    compactConflictLiteralPool();
-    last_ccl_cleanup_time_ = statistics_.num_clauses_learned_;
+    if (statistics_.num_clauses_learned_ - last_ccl_cleanup_time_ > 100000) {
+      compactConflictLiteralPool();
+      last_ccl_cleanup_time_ = statistics_.num_clauses_learned_;
+    }
   }
 
   statistics_.num_conflicts_++;
@@ -659,11 +667,13 @@ retStateT Solver::resolveConflict() {
   assert(
       stack_.top().remaining_components_ofs() <= comp_manager_.component_stack_size());
 
-  assert(uip_clauses_.size() == 1);
+  if (sm_state == NIL) {
+    assert(uip_clauses_.size() == 1);
 
-  // DEBUG
-  if (uip_clauses_.back().size() == 0) {
-    cout << "c EMPTY CLAUSE FOUND" << endl;
+    // DEBUG
+    if (uip_clauses_.back().size() == 0) {
+      cout << "c EMPTY CLAUSE FOUND" << endl;
+    }
   }
   // END DEBUG
 
@@ -685,7 +695,7 @@ retStateT Solver::resolveConflict() {
   // this is because we might have checked a literal
   // during implict BCP which has been a failed literal
   // due only to assignments made at lower decision levels
-  if (uip_clauses_.back().front() == TOS_decLit().neg()) {
+  if (sm_state == NIL && uip_clauses_.back().front() == TOS_decLit().neg()) {
     assert(TOS_decLit().neg() == uip_clauses_.back()[0]);
     var(TOS_decLit().neg()).ante = addUIPConflictClause(
         uip_clauses_.back());
