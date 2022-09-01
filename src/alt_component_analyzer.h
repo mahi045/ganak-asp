@@ -118,6 +118,9 @@ public:
   unsigned max_variable_id(){
     return max_variable_id_;
   }
+  bool isIndependentSupport(unsigned var) {
+    return independent_support_.find(var) != independent_support_.end();
+  }
 
   ComponentArchetype &getArchetype(){
     return archetype_;

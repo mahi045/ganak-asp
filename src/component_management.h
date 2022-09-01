@@ -152,6 +152,20 @@ void ComponentManager::decreasecachescore(Component &comp)
 void ComponentManager::sortComponentStackRange(unsigned start, unsigned end)
 {
   assert(start <= end);
+  // SEE THIS LATER
+  // for (unsigned i = start; i < end; i++) {
+  //   bool unfounded = true;
+  //   for (auto vt = component_stack_[i]->varsBegin(); *vt != varsSENTINEL; vt++) {
+  //     if (ana_.isIndependentSupport(*vt)) {
+  //       unfounded = false;
+  //       break;
+  //     }
+  //   }
+  //   if (unfounded) {
+  //     if (start != i)
+  //       swap(component_stack_[start], component_stack_[i]);
+  //   }
+  // }
   // sort the remaining components for processing
   for (unsigned i = start; i < end; i++)
     for (unsigned j = i + 1; j < end; j++)
