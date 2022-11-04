@@ -320,7 +320,9 @@ void Solver::decideLiteral(smStateT &sm_state) {
     StackLevel(stack_.top().currentRemainingComponent(),
                literal_stack_.size(),
                comp_manager_.component_stack_size()));
-
+  if (comp_manager_.superComponentOf(stack_.top()).hasNoSolution()) {
+    sm_state = CONFLICT;
+  }
   auto it = comp_manager_.superComponentOf(stack_.top()).varsBegin();
   unsigned max_score_var = *it;
   float max_score = scoreOf(*(it));

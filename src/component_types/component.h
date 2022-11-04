@@ -42,6 +42,14 @@ public:
     clauses_ofs_ = data_.size();
   }
 
+  void setUnSAT() {
+    found_unsat = true;
+  }
+
+  bool hasNoSolution() {
+    return found_unsat;
+  }
+
   void addCl(const ClauseIndex cl) {
     // the only time a clsSENTINEL is added should be in a
     // call to closeClauseData(..)
@@ -107,6 +115,7 @@ private:
   // once the model count is known, a link to the packed component will be stored
   // in the hash table
   CacheEntryID id_ = 0;
+  bool found_unsat = false;
 };
 
 
