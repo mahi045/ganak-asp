@@ -168,7 +168,7 @@ void ComponentManager::sortComponentStackRange(unsigned start, unsigned end)
     // if unsat is true then there is an unfounded component or stable models = 0
   }
   if (end - i - 1 > 0) {
-    decreaseComponentCount(end - i - 1);
+    cache_.decreaseComponentCount(end - i - 1);
   }
   // sort the remaining components for processing
   for (unsigned i = start; i < end; i++)
