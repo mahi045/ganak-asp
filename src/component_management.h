@@ -154,7 +154,8 @@ void ComponentManager::sortComponentStackRange(unsigned start, unsigned end)
   assert(start <= end);
   // SEE THIS LATER
   bool unsat = false;
-  for (unsigned i = start; i < end; i++) {
+  unsigned i;
+  for (i = start; i < end; i++) {
     unsat = true;
     for (auto vt = component_stack_[i]->varsBegin(); *vt != varsSENTINEL; vt++) {
       if (ana_.isIndependentSupport(*vt)) {
@@ -166,10 +167,8 @@ void ComponentManager::sortComponentStackRange(unsigned start, unsigned end)
       break;
     // if unsat is true then there is an unfounded component or stable models = 0
   }
-  if (unsat) {
-    for (unsigned i = start; i < end; i++) {
-      component_stack_[i]->setUnSAT();
-    }
+  if (end - i - 1 > 0) {
+    decreaseComponentCount(end - i - 1);
   }
   // sort the remaining components for processing
   for (unsigned i = start; i < end; i++)

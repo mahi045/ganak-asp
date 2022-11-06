@@ -86,7 +86,9 @@ public:
   //   }
   //   return false;
   // }
-
+  void decreaseComponentCount(int dec) {
+    statistics_.num_cache_look_ups_ -= dec;
+  }
   bool manageNewComponent(StackLevel &top, CacheableComponent &packed_comp) {
     statistics_.num_cache_look_ups_++;
     uint64_t *clhash_key;
