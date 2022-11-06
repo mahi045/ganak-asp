@@ -1,0 +1,4 @@
+scripts/CMakeFiles/*
+scripts/src/CMakeFiles/*
+scripts/src/component_types/CMakeFiles/*
+scripts/src/clhash/CMakeFiles/*
