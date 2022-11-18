@@ -42,14 +42,6 @@ public:
     clauses_ofs_ = data_.size();
   }
 
-  void setUnSAT() {
-    found_unsat = true;
-  }
-
-  bool hasNoSolution() {
-    return found_unsat;
-  }
-
   void addCl(const ClauseIndex cl) {
     // the only time a clsSENTINEL is added should be in a
     // call to closeClauseData(..)

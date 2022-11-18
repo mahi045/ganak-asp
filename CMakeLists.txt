@@ -50,7 +50,7 @@ if(POLICY CMP0104)
 endif()
 
 
-project (ganak) 
+project (ganak_asp) 
 
 # -----------------------------------------------------------------------------
 # Make RelWithDebInfo the default build type if otherwise not set
