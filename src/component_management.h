@@ -171,7 +171,7 @@ void ComponentManager::sortComponentStackRange(unsigned start, unsigned end)
   //   cache_.decreaseComponentCount(end - i - 1);
   // }
   // sort the remaining components for processing
-  if (start < end) {
+  if (end - start > 1) {
     // it is a decomposition node
     statistics_.num_decompositions_++;
   }
