@@ -173,7 +173,7 @@ void ComponentManager::sortComponentStackRange(unsigned start, unsigned end)
   // sort the remaining components for processing
   if (end - start > 1) {
     // it is a decomposition node
-    statistics_.num_decompositions_++;
+    statistics_.num_decompositions_ += (end - start);
   }
   for (unsigned i = start; i < end; i++)
     for (unsigned j = i + 1; j < end; j++)
