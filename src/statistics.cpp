@@ -91,6 +91,7 @@ void DataAndStatistics::printShort(const bool pmc) {
   cout << "c clauses (removed) \t\t\t" << num_original_clauses_ << " ("
       << num_original_clauses_ - num_clauses() << ")" << endl;
   cout << "c decisions \t\t\t\t" << num_decisions_ << endl;
+  cout << "c decompositions \t\t\t" << num_decompositions_ << endl;
   cout << "c Max. decision level \t\t\t" << max_decision_level_ << endl;
   cout << "c conflicts \t\t\t\t" << num_conflicts_ << endl;
   cout << "c conflict clauses (all/bin/unit) \t";

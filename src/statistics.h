@@ -60,6 +60,7 @@ public:
   unsigned long max_decision_level_ = 0;
   /// number of all decisions made
   unsigned long num_decisions_ = 0;
+  unsigned long num_decompositions_ = 0;
   /// number of all implications derived
   unsigned long num_implications_ = 0;
   // number of all failed literal detections
