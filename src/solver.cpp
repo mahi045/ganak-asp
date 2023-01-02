@@ -493,7 +493,9 @@ void Solver::decideLiteral(smStateT &sm_state) {
   stack_.top().setbranchvariable(max_score_var);
 
   setLiteralIfFree(theLit);
-  statistics_.num_decisions_++;
+  if (isindependent_support_present) {
+    statistics_.num_decisions_++;
+  }
   if (config_.maxdecterminate) {
     if (statistics_.num_decisions_ > config_.maxdec &&
         statistics_.num_conflicts_ < config_.minconflicts_) {
