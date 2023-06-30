@@ -270,19 +270,26 @@ void Solver::solve(const string &file_name)
 SOLVER_StateT Solver::countSAT() {
   retStateT state = RESOLVED;
 
-  smStateT sm_state = NIL;
+  // smStateT sm_state = NIL;
   while (true) {
     while (comp_manager_.findNextRemainingComponentOf(stack_.top())) {
       unsigned t = statistics_.num_cache_look_ups_ + 1;
       // if (2 * log2(t) > log2(config_.delta) + 64 * config_.hashrange * 0.9843) { // 1 - log_2(2.004)/64 = 0.9843
       //   return CHANGEHASH;
       // }
-      decideLiteral(sm_state);
+      bool ret = decideLiteral();
+      if (!ret) {
+        stack_.top().mark_branch_unsat();
+        stack_.top().changeBranch();
+        stack_.top().mark_branch_unsat();
+        state = BACKTRACK;
+        break;
+      }
       if (stopwatch_.timeBoundBroken()) {
         return TIMEOUT;
       }
-      while (sm_state == CONFLICT || !bcp()) {
-        state = resolveConflict(sm_state);
+      while (!bcp()) {
+        state = resolveConflict();
         if (state == BACKTRACK) {
           break;
         }
@@ -292,9 +299,7 @@ SOLVER_StateT Solver::countSAT() {
       }
     }
 
-    state = backtrack(sm_state);
-    if (sm_state == CONFLICT) 
-			sm_state = NIL;
+    state = backtrack();
     if (state == RESTART) {
       continue;
     }
@@ -302,9 +307,9 @@ SOLVER_StateT Solver::countSAT() {
       return SUCCESS;
     }
     while (state != PROCESS_COMPONENT && !bcp()) {
-      state = resolveConflict(sm_state);
+      state = resolveConflict();
       if (state == BACKTRACK) {
-        state = backtrack(sm_state);
+        state = backtrack();
         if (state == EXIT) {
           return SUCCESS;
         }
@@ -314,7 +319,7 @@ SOLVER_StateT Solver::countSAT() {
   return SUCCESS;
 }
 
-void Solver::decideLiteral(smStateT &sm_state) {
+bool Solver::decideLiteral() {
   // establish another decision stack level
   stack_.push_back(
     StackLevel(stack_.top().currentRemainingComponent(),
@@ -448,7 +453,7 @@ void Solver::decideLiteral(smStateT &sm_state) {
   // this assert should always hold,
   // if not then there is a bug in the logic of countSAT();
   if (!isindependent_support_present) {
-    sm_state = CONFLICT;
+    return false;
   }
   assert(max_score_var != 0);
   bool polarity = true;
@@ -518,9 +523,10 @@ void Solver::decideLiteral(smStateT &sm_state) {
       cout << "c Max decision level :" << statistics_.max_decision_level_ << endl;
     }
   }
+  return true;
 }
 
-retStateT Solver::backtrack(smStateT &sm_state) {
+retStateT Solver::backtrack() {
   assert(
       stack_.top().remaining_components_ofs() <= comp_manager_.component_stack_size());
 
@@ -652,8 +658,8 @@ retStateT Solver::backtrack(smStateT &sm_state) {
   return EXIT;
 }
 
-retStateT Solver::resolveConflict(smStateT &sm_state) {
-  if (sm_state == NIL) {
+retStateT Solver::resolveConflict() {
+
     recordLastUIPCauses();
 
     if (statistics_.num_clauses_learned_ - last_ccl_deletion_time_ >
@@ -666,21 +672,20 @@ retStateT Solver::resolveConflict(smStateT &sm_state) {
       compactConflictLiteralPool();
       last_ccl_cleanup_time_ = statistics_.num_clauses_learned_;
     }
-  }
 
   statistics_.num_conflicts_++;
 
   assert(
       stack_.top().remaining_components_ofs() <= comp_manager_.component_stack_size());
 
-  if (sm_state == NIL) {
+  // if (sm_state == NIL) {
     assert(uip_clauses_.size() == 1);
 
     // DEBUG
     if (uip_clauses_.back().size() == 0) {
       cout << "c EMPTY CLAUSE FOUND" << endl;
     }
-  }
+  // }
   // END DEBUG
 
   stack_.top().mark_branch_unsat();
@@ -701,7 +706,7 @@ retStateT Solver::resolveConflict(smStateT &sm_state) {
   // this is because we might have checked a literal
   // during implict BCP which has been a failed literal
   // due only to assignments made at lower decision levels
-  if (sm_state == NIL && uip_clauses_.back().front() == TOS_decLit().neg()) {
+  if (uip_clauses_.back().front() == TOS_decLit().neg()) {
     assert(TOS_decLit().neg() == uip_clauses_.back()[0]);
     var(TOS_decLit().neg()).ante = addUIPConflictClause(
         uip_clauses_.back());
