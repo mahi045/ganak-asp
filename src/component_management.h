@@ -87,7 +87,7 @@ public:
 
   inline void recordRemainingCompsFor(int level, StackLevel &top);
 
-  inline void sortComponentStackRange(unsigned start, unsigned end);
+  inline bool sortComponentStackRange(unsigned start, unsigned end);
 
   inline float cacheScoreOf(VariableIndex v);
 
@@ -149,24 +149,24 @@ void ComponentManager::decreasecachescore(Component &comp)
   }
 }
 
-void ComponentManager::sortComponentStackRange(unsigned start, unsigned end)
+bool ComponentManager::sortComponentStackRange(unsigned start, unsigned end)
 {
   assert(start <= end);
   // SEE THIS LATER
-  // bool unsat = false;
-  // unsigned i;
-  // for (i = start; i < end; i++) {
-  //   unsat = true;
-  //   for (auto vt = component_stack_[i]->varsBegin(); *vt != varsSENTINEL; vt++) {
-  //     if (ana_.isIndependentSupport(*vt)) {
-  //       unsat = false;
-  //       break;
-  //     }
-  //   }
-  //   if (unsat) 
-  //     break;
-  //   // if unsat is true then there is an unfounded component or stable models = 0
-  // }
+  bool unsat = false;
+  unsigned i;
+  for (i = start; i < end; i++) {
+    unsat = true;
+    for (auto vt = component_stack_[i]->varsBegin(); *vt != varsSENTINEL; vt++) {
+      if (ana_.isIndependentSupport(*vt)) {
+        unsat = false;
+        break;
+      }
+    }
+    if (unsat) 
+      break;
+    // if unsat is true then there is an unfounded component or stable models = 0
+  }
   // if (end - i - 1 > 0) {
   //   cache_.decreaseComponentCount(end - i - 1);
   // }
@@ -181,6 +181,7 @@ void ComponentManager::sortComponentStackRange(unsigned start, unsigned end)
       if (component_stack_[i]->num_variables() < component_stack_[j]->num_variables())
         swap(component_stack_[i], component_stack_[j]);
     }
+  return !unsat;
 }
 
 bool ComponentManager::findNextRemainingComponentOf(int level, StackLevel &top)
@@ -245,8 +246,8 @@ void ComponentManager::recordRemainingCompsFor(int level, StackLevel &top)
     }
   }
   top.set_unprocessed_components_end(component_stack_.size());
-  sortComponentStackRange(new_comps_start_ofs, component_stack_.size());
-  if (component_stack_.size() - new_comps_start_ofs > 1) {
+  bool iszero = sortComponentStackRange(new_comps_start_ofs, component_stack_.size());
+  if (component_stack_.size() - new_comps_start_ofs > 1 && iszero) {
     if (statistics_.decomposition_node.find(level) == statistics_.decomposition_node.end()) {
       statistics_.decomposition_node[level] =  1;
     } else {
