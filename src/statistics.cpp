@@ -141,4 +141,18 @@ void DataAndStatistics::printShort(const bool pmc) {
   cout << "c # END" << endl;
   cout << "c " << endl;
   cout << "c time: " << time_elapsed_ << "s" << endl;
+  cout << "c decomposition node levels: " << endl;
+  uint64_t total_decomposition_node = 0;
+  for (auto it=decomposition_node.begin(); it!=decomposition_node.end(); it++) {
+    cout << "c L " << it->first << " " << it->second << endl;
+    total_decomposition_node += it->second;
+  } 
+  cout << "c L sum " << total_decomposition_node << endl;
+
+  uint64_t total_cache_node = 0;
+  for (auto it=cache_node.begin(); it!=cache_node.end(); it++) {
+    cout << "c C " << it->first << " " << it->second << endl;
+    total_cache_node += it->second;
+  } 
+  cout << "c C sum " << total_cache_node << endl;
 }

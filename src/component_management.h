@@ -83,9 +83,9 @@ public:
   // returns true if a non-trivial non-cached component
   // has been found and is now stack_.TOS_NextComp()
   // returns false if all components have been processed;
-  inline bool findNextRemainingComponentOf(StackLevel &top);
+  inline bool findNextRemainingComponentOf(int level, StackLevel &top);
 
-  inline void recordRemainingCompsFor(StackLevel &top);
+  inline void recordRemainingCompsFor(int level, StackLevel &top);
 
   inline void sortComponentStackRange(unsigned start, unsigned end);
 
@@ -161,11 +161,11 @@ void ComponentManager::sortComponentStackRange(unsigned start, unsigned end)
     }
 }
 
-bool ComponentManager::findNextRemainingComponentOf(StackLevel &top)
+bool ComponentManager::findNextRemainingComponentOf(int level, StackLevel &top)
 {
   // record Remaining Components if there are none!
   if (component_stack_.size() <= top.remaining_components_ofs())
-    recordRemainingCompsFor(top);
+    recordRemainingCompsFor(level, top);
   assert(!top.branch_found_unsat());
   if (top.hasUnprocessedComponents())
     return true;
@@ -175,7 +175,7 @@ bool ComponentManager::findNextRemainingComponentOf(StackLevel &top)
   return false;
 }
 
-void ComponentManager::recordRemainingCompsFor(StackLevel &top)
+void ComponentManager::recordRemainingCompsFor(int level, StackLevel &top)
 {
   Component &super_comp = superComponentOf(top);
   unsigned new_comps_start_ofs = component_stack_.size();
@@ -197,7 +197,7 @@ void ComponentManager::recordRemainingCompsFor(StackLevel &top)
       {
         packed_comp = new CacheableComponent(ana_.getArchetype().current_comp_for_caching_);
       }
-      if (!cache_.manageNewComponent(top, *packed_comp))
+      if (!cache_.manageNewComponent(level, top, *packed_comp))
       {
         component_stack_.push_back(p_new_comp);
         p_new_comp->set_id(cache_.storeAsEntry(*packed_comp, super_comp.id()));
@@ -224,6 +224,13 @@ void ComponentManager::recordRemainingCompsFor(StackLevel &top)
   }
   top.set_unprocessed_components_end(component_stack_.size());
   sortComponentStackRange(new_comps_start_ofs, component_stack_.size());
+  if (component_stack_.size() - new_comps_start_ofs > 1) {
+    if (statistics_.decomposition_node.find(level) == statistics_.decomposition_node.end()) {
+      statistics_.decomposition_node[level] =  1;
+    } else {
+      statistics_.decomposition_node[level] = statistics_.decomposition_node[level] + 1;
+    }
+  }
 }
 
 #endif /* COMPONENT_MANAGEMENT_H_ */
