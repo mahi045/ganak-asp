@@ -272,7 +272,7 @@ SOLVER_StateT Solver::countSAT() {
 
   // smStateT sm_state = NIL;
   while (true) {
-    while (comp_manager_.findNextRemainingComponentOf(stack_.top())) {
+    while (comp_manager_.findNextRemainingComponentOf(stack_.get_decision_level(), stack_.top())) {
       unsigned t = statistics_.num_cache_look_ups_ + 1;
       // if (2 * log2(t) > log2(config_.delta) + 64 * config_.hashrange * 0.9843) { // 1 - log_2(2.004)/64 = 0.9843
       //   return CHANGEHASH;

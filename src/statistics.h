@@ -13,6 +13,7 @@
 #include <vector>
 
 #include <gmpxx.h>
+#include <unordered_map>
 
 #include "structures.h"
 #include "component_types/cacheable_component.h"
@@ -82,6 +83,7 @@ public:
   uint64_t num_cached_components_ = 0;
   uint64_t total_num_cached_components_ = 0;
   uint64_t sum_size_cached_components_ = 0;
+  unordered_map<uint32_t, uint64_t> decomposition_node;
 
   // the number of bytes occupied by all
   // components
