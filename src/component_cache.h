@@ -113,13 +113,13 @@ public:
       while(act_id){
         if (entry(act_id).equals(packed_comp)) {
           statistics_.incorporate_cache_hit(packed_comp);
-          if (entry(act_id).model_count() > 0) {
+          // if (entry(act_id).model_count() == 0) {
             if (statistics_.cache_node.find(level) == statistics_.cache_node.end()) {
               statistics_.cache_node[level] = 1;
             } else {
               statistics_.cache_node[level] = statistics_.cache_node[level] + 1;
             }
-          }
+          // }
           top.includeSolution(entry(act_id).model_count());
           return true;
         }
