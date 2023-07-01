@@ -84,6 +84,7 @@ public:
   uint64_t total_num_cached_components_ = 0;
   uint64_t sum_size_cached_components_ = 0;
   unordered_map<uint32_t, uint64_t> decomposition_node;
+  unordered_map<uint32_t, uint64_t> cache_node;
 
   // the number of bytes occupied by all
   // components
