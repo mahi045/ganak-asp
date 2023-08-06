@@ -153,6 +153,12 @@ void Solver::HardWireAndCompact()
   original_lit_pool_size_ = literal_pool_.size();
 }
 
+bool MyComp(pair<int,int> a, pair<int,int> b)
+{
+    if(a.first>=b.first) return true;
+    return false;
+}
+
 void Solver::solve(const string &file_name)
 {
   stopwatch_.setTimeBound(config_.time_bound_seconds);
@@ -234,7 +240,27 @@ void Solver::solve(const string &file_name)
 
     comp_manager_.initialize(literals_, literal_pool_, num_variables());
 
-    statistics_.exit_state_ = countSAT();
+    statistics_.exit_state_ = SUCCESS;
+    comp_manager_.findNextRemainingComponentOf(stack_.get_decision_level(), stack_.top());
+    // computing the score of each variable
+    vector<pair<float,int>> activity_score;
+    for (unsigned v = 1; v <= num_variables(); v++) {
+      float score_v = scoreOf(v);
+      activity_score.push_back({score_v, v});
+    }
+    // sorting 
+    sort(activity_score.begin(),activity_score.end(), MyComp);
+    int top = 10;
+    for(auto i: activity_score)
+    {
+        if (independent_support_.find(i.second) != independent_support_.end())
+        {
+          cout << "Auxiliary variables" << endl;
+        }
+        else {
+          cout << "Original variables" << endl;
+        }
+    }
 
     if (statistics_.exit_state_ == CHANGEHASH) {
       cout << "ERROR: We need to change the hash range (-1)" << endl;
