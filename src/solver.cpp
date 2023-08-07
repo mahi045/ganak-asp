@@ -250,17 +250,37 @@ void Solver::solve(const string &file_name)
     }
     // sorting 
     sort(activity_score.begin(),activity_score.end(), MyComp);
-    int top = 10;
+    vector<unsigned> score_ori;
+    vector<unsigned> score_aux;
+    score_aux.clear(); score_ori.clear();
     for(auto i: activity_score)
     {
-        if (independent_support_.find(i.second) != independent_support_.end())
-        {
-          cout << "Auxiliary variables" << endl;
+      if (independent_support_.find(i.second) != independent_support_.end())
+      {
+        if (score_aux.size() < 5) {
+          score_aux.push_back(i.first);
         }
-        else {
-          cout << "Original variables" << endl;
+        
+      }
+      else {
+        if (score_ori.size() < 5) {
+          score_ori.push_back(i.first);
         }
+      }
+      if (score_aux.size() >= 5 && score_ori.size() >= 5) {
+        break;
+      }
     }
+    cout << "Max original variables:" << endl;
+    for (auto s: score_ori) {
+      cout << s << " "; 
+    }
+    cout << endl;
+    cout << "Max auxiliary variables:" << endl;
+    for (auto s: score_aux) {
+      cout << s << " "; 
+    }
+    cout << endl;
 
     if (statistics_.exit_state_ == CHANGEHASH) {
       cout << "ERROR: We need to change the hash range (-1)" << endl;
