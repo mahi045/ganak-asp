@@ -4,3 +4,4 @@ scripts/src/component_types/CMakeFiles/*
 scripts/src/clhash/CMakeFiles/*
 scripts/src/clhash/libclhash.so
 scripts/src/*
+scripts/result-*
