@@ -19,7 +19,7 @@ jobs:
 
       - name: Run build script
         run: |
-          cd script
+          cd scripts
           ./build_norm.sh
 
 
